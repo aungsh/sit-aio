@@ -1,4 +1,3 @@
-// route to handle room vancay updates for status of UNKNOWN, OCCUPIED, and VACANT and update it in the prisma db classrooms table
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
