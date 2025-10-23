@@ -1,0 +1,22 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Classrooms {
+    id        Int      @id @default(autoincrement())
+    name      String
+    vacancy   Vacancy  @default(UNKNOWN)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum Vacancy {
+    UNKNOWN
+    OCCUPIED
+    VACANT
+}
