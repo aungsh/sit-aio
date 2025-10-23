@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2025 SIT AIO Authors
+# SPDX-License-Identifier: MIT
+
+profiles:
+  default:
+    fqbn: TinyCircuits:samd:tinyscreen
+    platforms:
+      - platform: TinyCircuits:samd (1.1.0)
+        platform_index_url: https://files.tinycircuits.com/ArduinoBoards/package_tinycircuits_index.json
+    libraries:
+      - WiFi101 (0.16.1)
+      - TinyScreen (1.1.0)
+      - dir: ../vendor/arduino_libs/TinyCircuits-TSL2572-library
+
+default_profile: default
