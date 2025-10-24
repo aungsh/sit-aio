@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 SIT AIO Authors
+# SPDX-License-Identifier: MIT
+
 #include <TSL2572.h>      // For TSL2572 ambient light sensor
 int room_occupancy_status = -1;
 float AmbientLightLuxPrev = NULL;

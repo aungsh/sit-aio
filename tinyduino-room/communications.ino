@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 SIT AIO Authors
+# SPDX-License-Identifier: MIT
+
 #include <WiFi101.h>
 
 void communications_setup() {
