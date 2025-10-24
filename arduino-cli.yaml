@@ -1,0 +1,5 @@
+board_manager:
+  additional_urls:
+    - https://files.tinycircuits.com/ArduinoBoards/package_tinycircuits_index.json
+library:
+  enable_unsafe_install: true

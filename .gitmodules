@@ -1,0 +1,3 @@
+[submodule "vendor/arduino_libs/TinyCircuits-TSL2572-library"]
+	path = vendor/arduino_libs/TinyCircuits-TSL2572-library
+	url = https://github.com/TinyCircuits/TinyCircuits-TSL2572-library.git
