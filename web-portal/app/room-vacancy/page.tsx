@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Pusher from "pusher-js";
 
 type Room = {
   id: number;
@@ -9,32 +10,38 @@ type Room = {
   updatedAt: string;
 };
 
+// Initialize Pusher client (frontend)
+const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+  cluster: "ap1",
+});
+
 export default function RoomVacancyPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
 
-  // Fetch initial data
+  // 1️⃣ Fetch initial data
   useEffect(() => {
     fetch("/api/classrooms")
       .then((res) => res.json())
       .then((data) => setRooms(data));
   }, []);
 
-  // Subscribe to real-time updates via SSE
+  // 2️⃣ Subscribe to Pusher for realtime updates
   useEffect(() => {
-    const eventSource = new EventSource("/api/room-events");
+    const channel = pusher.subscribe("room-channel");
 
-    eventSource.onmessage = (event) => {
-      if (event.data !== "connected") {
-        const updatedRoom: Room = JSON.parse(event.data);
-        setRooms((prev) =>
-          prev.map((r) => (r.id === updatedRoom.id ? updatedRoom : r))
-        );
-      }
+    channel.bind("room-updated", (updatedRoom: Room) => {
+      setRooms((prev) =>
+        prev.map((r) => (r.id === updatedRoom.id ? updatedRoom : r))
+      );
+    });
+
+    return () => {
+      channel.unbind_all();
+      pusher.unsubscribe("room-channel");
     };
-
-    return () => eventSource.close();
   }, []);
 
+  // 3️⃣ Render UI
   return (
     <section className="">
       <div className="">

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { broadcastUpdate } from "../room-events/route";
+import { pusherServer } from "@/lib/pusher";
 
 export async function PATCH(request: Request) {
   try {
@@ -21,7 +21,7 @@ export async function PATCH(request: Request) {
       },
     });
 
-    broadcastUpdate(updatedRoom);
+    await pusherServer.trigger("room-channel", "room-updated", updatedRoom);
 
     return NextResponse.json(updatedRoom, { status: 200 });
   } catch (error) {
