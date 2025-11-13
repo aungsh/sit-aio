@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="min-h-screen mt-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="">
+      <div className="">
         {/* Subtitle */}
         <div className="mb-6 sm:mb-8">
           <p className="text-sm sm:text-base text-gray-500 tracking-widest uppercase font-medium">
