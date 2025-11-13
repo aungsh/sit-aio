@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/db";
 
 export async function PATCH(request: Request) {
   try {
@@ -16,7 +14,10 @@ export async function PATCH(request: Request) {
 
     const updatedRoom = await prisma.classrooms.update({
       where: { id: roomId },
-      data: { vacancy: status },
+      data: {
+        vacancy: status,
+        updatedAt: new Date(),
+      },
     });
 
     return NextResponse.json(updatedRoom, { status: 200 });
