@@ -1,33 +1,56 @@
-import prisma from "@/lib/db";
+"use client";
 
-export default async function RoomVacancyPage() {
-  // Fetch all classrooms from Prisma
-  const classrooms = await prisma.classrooms.findMany({
-    orderBy: { updatedAt: "desc" },
-  });
+import { useEffect, useState } from "react";
+
+type Room = {
+  id: number;
+  name: string;
+  vacancy: "UNKNOWN" | "OCCUPIED" | "VACANT";
+  updatedAt: string;
+};
+
+export default function RoomVacancyPage() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+
+  // Fetch initial data
+  useEffect(() => {
+    fetch("/api/classrooms")
+      .then((res) => res.json())
+      .then((data) => setRooms(data));
+  }, []);
+
+  // Subscribe to real-time updates via SSE
+  useEffect(() => {
+    const eventSource = new EventSource("/api/room-events");
+
+    eventSource.onmessage = (event) => {
+      if (event.data !== "connected") {
+        const updatedRoom: Room = JSON.parse(event.data);
+        setRooms((prev) =>
+          prev.map((r) => (r.id === updatedRoom.id ? updatedRoom : r))
+        );
+      }
+    };
+
+    return () => eventSource.close();
+  }, []);
 
   return (
     <section className="">
       <div className="">
-        {/* Title */}
-        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-gray-900 mb-4">
-          Room Vacancy
-        </h1>
-        <p className="text-lg sm:text-xl text-gray-600 font-light mb-12">
-          Check the current room status and last updated time.
+        <h1 className="text-4xl font-bold mb-4">Room Vacancy</h1>
+        <p className="text-lg text-gray-600 mb-12">
+          Realtime updates of room status
         </p>
 
-        {/* Rooms Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classrooms.length > 0 ? (
-            classrooms.map((room) => (
+          {rooms.length > 0 ? (
+            rooms.map((room) => (
               <div
                 key={room.id}
-                className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 text-left group"
+                className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm"
               >
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-[#ff006e] transition-colors">
-                  {room.name}
-                </h3>
+                <h3 className="text-xl font-semibold mb-2">{room.name}</h3>
                 <p
                   className={`text-sm font-medium mb-3 ${
                     room.vacancy === "VACANT"
@@ -37,18 +60,10 @@ export default async function RoomVacancyPage() {
                       : "text-gray-400"
                   }`}
                 >
-                  {room.vacancy === "VACANT"
-                    ? "Vacant"
-                    : room.vacancy === "OCCUPIED"
-                    ? "Occupied"
-                    : "Unknown"}
+                  {room.vacancy}
                 </p>
                 <p className="text-xs text-gray-500">
-                  Last updated:{" "}
-                  {new Date(room.updatedAt).toLocaleString("en-SG", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
+                  Last updated: {new Date(room.updatedAt).toLocaleString()}
                 </p>
               </div>
             ))

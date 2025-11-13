@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { broadcastUpdate } from "../room-events/route";
 
 export async function PATCH(request: Request) {
   try {
@@ -19,6 +20,8 @@ export async function PATCH(request: Request) {
         updatedAt: new Date(),
       },
     });
+
+    broadcastUpdate(updatedRoom);
 
     return NextResponse.json(updatedRoom, { status: 200 });
   } catch (error) {
