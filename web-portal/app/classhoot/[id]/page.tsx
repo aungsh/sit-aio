@@ -14,11 +14,6 @@ async function getGameRoom(code: string): Promise<GameRoom | null> {
       return null;
     }
 
-    console.log(
-      "Fetched game room data successfully:",
-      await response.clone().json()
-    );
-
     return await response.json();
   } catch (error) {
     console.error("Error fetching game room:", error);
