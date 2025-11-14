@@ -11,7 +11,9 @@ interface GameRoom {
   title: string;
   status: string;
   totalQuestions: number;
+  currentIndex: number;
   players: Player[];
+  questions: Question[];
 }
 
 interface QuestionInput {
@@ -39,4 +41,17 @@ interface Question {
   timeLimit: number;
 }
 
-export type { Player, GameRoom, QuestionInput, GameRoomPayload, Question };
+type PlayerRoom = {
+  playerId: number;
+  roomId: number;
+  score: number;
+};
+
+export type {
+  Player,
+  GameRoom,
+  QuestionInput,
+  GameRoomPayload,
+  Question,
+  PlayerRoom,
+};

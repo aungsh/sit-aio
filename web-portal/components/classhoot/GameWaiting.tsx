@@ -13,7 +13,7 @@ export default function GameWaiting({ gameRoom }: { gameRoom: GameRoom }) {
 
   async function handleStartGame() {
     startTransition(async () => {
-      await fetch("/api/classhoot/start", {
+      await fetch("/api/classhoot/gameroom/start", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: gameRoom.code }),

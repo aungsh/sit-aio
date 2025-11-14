@@ -6,7 +6,7 @@ export async function PATCH(req: Request) {
 
   const room = await prisma.gameRoom.update({
     where: { code },
-    data: { status: "ONGOING" },
+    data: { status: "ONGOING", currentIndex: 0 },
   });
 
   return NextResponse.json(room);

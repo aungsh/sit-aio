@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     // Connect or create playerRoom
     const playerRoom = await prisma.playerRoom.upsert({
       where: {
-        playerId_roomId: { playerId: player.id, roomId: gameRoom.id }, // make sure you have a unique compound index
+        playerId_roomId: { playerId: player.id, roomId: gameRoom.id },
       },
       update: {}, // already exists, do nothing
       create: {

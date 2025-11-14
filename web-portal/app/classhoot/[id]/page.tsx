@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import GameWaiting from "@/components/classhoot/GameWaiting";
+import GameOngoingWrapper from "@/components/classhoot/GameOngoingWrapper";
 import { GameRoom } from "@/types/types";
 
 async function getGameRoom(code: string): Promise<GameRoom | null> {
@@ -29,14 +30,13 @@ export default async function ClassHootRoomPage({
   const { id } = await params;
   const gameRoom = await getGameRoom(id);
 
-  if (!gameRoom) {
-    notFound();
-  }
+  if (!gameRoom) notFound();
 
   if (gameRoom.status === "WAITING") {
     return <GameWaiting gameRoom={gameRoom} />;
   } else if (gameRoom.status === "ONGOING") {
-    return <div>Ongoing</div>;
+    // Pass only questions to the client wrapper
+    return <GameOngoingWrapper code={gameRoom.code} />;
   } else {
     return <div>Game Ended</div>;
   }
