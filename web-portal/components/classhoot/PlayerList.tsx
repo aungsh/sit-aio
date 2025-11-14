@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Pusher from "pusher-js";
-
-interface Player {
-  id: string;
-  name: string;
-}
+import { Player } from "@/types/types";
 
 interface PlayersListProps {
   roomCode: string;

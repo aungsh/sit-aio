@@ -7,16 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-interface Question {
-  text: string;
-  choice1: string;
-  choice2: string;
-  choice3: string;
-  choice4: string;
-  correctChoice: number;
-  timeLimit: number;
-}
+import { Question } from "@/types/types";
 
 export default function ClassHootPage() {
   const router = useRouter();

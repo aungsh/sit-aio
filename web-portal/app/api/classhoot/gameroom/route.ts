@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { GameRoomPayload } from "@/types/types";
 
 async function generateRoomCode() {
   while (true) {
@@ -8,22 +9,6 @@ async function generateRoomCode() {
 
     if (!exists) return code;
   }
-}
-
-// ---- Types ----
-interface QuestionInput {
-  text: string;
-  choice1: string;
-  choice2: string;
-  choice3: string;
-  choice4: string;
-  correctChoice: number;
-  timeLimit?: number;
-}
-
-interface GameRoomPayload {
-  title: string;
-  questions: QuestionInput[];
 }
 
 export async function POST(req: Request) {

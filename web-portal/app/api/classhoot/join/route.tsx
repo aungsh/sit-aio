@@ -1,11 +1,3 @@
-// api route for students to join classhoot game room
-// json
-// {
-//     "studentId": 2301234,
-//     "studentName": "John",
-//     "gameRoomCode": "230"
-// }
-
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
