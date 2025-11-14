@@ -75,7 +75,7 @@ export default function RoomVacancyPage() {
               </div>
             ))
           ) : (
-            <p className="text-gray-500 col-span-full">No rooms found.</p>
+            <p className="text-gray-500 col-span-full">Loading Rooms ...</p>
           )}
         </div>
       </div>

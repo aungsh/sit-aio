@@ -20,3 +20,76 @@ enum Vacancy {
     OCCUPIED
     VACANT
 }
+
+enum RoomStatus {
+    WAITING
+    ONGOING
+    ENDED
+}
+
+model GameRoom {
+    id             Int        @id @default(autoincrement())
+    code           String     @unique
+    title          String
+    status         RoomStatus
+    currentIndex   Int        @default(0)
+    totalQuestions Int
+    createdAt      DateTime   @default(now())
+    updatedAt      DateTime   @updatedAt
+
+    questions Question[]
+    players   PlayerRoom[]
+}
+
+model Question {
+    id            Int      @id @default(autoincrement())
+    text          String
+    index         Int
+    choice1       String
+    choice2       String
+    choice3       String
+    choice4       String
+    correctChoice Int
+    timeLimit     Int      @default(10)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    answers    Answer[]
+    gameRoom   GameRoom @relation(fields: [gameRoomId], references: [id])
+    gameRoomId Int
+}
+
+model Player {
+    id        Int      @id @default(autoincrement())
+    name      String
+    createdAt DateTime @default(now())
+
+    rooms   PlayerRoom[]
+    answers Answer[]
+}
+
+model PlayerRoom {
+    id       Int      @id @default(autoincrement())
+    playerId Int
+    roomId   Int
+    score    Int      @default(0)
+    joinedAt DateTime @default(now())
+
+    player Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+    room   GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+    @@unique([playerId, roomId])
+}
+
+model Answer {
+    id         Int      @id @default(autoincrement())
+    playerId   Int
+    questionId Int
+    choiceId   Int
+    correct    Boolean
+    timeMs     Int?
+    createdAt  DateTime @default(now())
+
+    player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+    question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}

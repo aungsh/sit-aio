@@ -8,7 +8,7 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Room Vacancy", href: "/room-vacancy" },
   { name: "Attendance", href: "/attendance" },
-  { name: "Hoot Ka", href: "/hoot-ka" },
+  { name: "Class Hoot", href: "/classhoot" },
   { name: "Documentation", href: "/documentation" },
   { name: "About Us", href: "/about" },
 ];
