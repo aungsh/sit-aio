@@ -49,7 +49,7 @@ export default function PlayersList({
   }, [roomCode]);
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
+    <div className="">
       <p className="text-sm text-gray-600 mb-3">Players ({players.length})</p>
 
       {players.length === 0 ? (
@@ -57,10 +57,7 @@ export default function PlayersList({
       ) : (
         <div className="space-y-2">
           {players.map((player) => (
-            <div
-              key={player.id}
-              className="bg-white rounded-md p-3 shadow-sm border border-gray-200 flex items-center gap-2"
-            >
+            <div key={player.id} className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
                 {player.name.charAt(0).toUpperCase()}
               </div>

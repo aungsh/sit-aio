@@ -1,7 +1,23 @@
 import { notFound } from "next/navigation";
 import PlayersList from "@/components/pusher/PlayerList";
 
-async function getGameRoom(code: string) {
+interface Player {
+  id: string;
+  name: string;
+  score?: number;
+  joinedAt?: string;
+}
+
+interface GameRoom {
+  id: number;
+  code: string;
+  title: string;
+  status: string;
+  totalQuestions: number;
+  players: Player[];
+}
+
+async function getGameRoom(code: string): Promise<GameRoom | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const response = await fetch(
@@ -62,7 +78,6 @@ export default async function ClassHootRoomPage({
               {gameRoom.status}
             </p>
           </div>
-
           <div className="bg-gray-50 rounded-lg p-4">
             <p className="text-sm text-gray-600 mb-1">Total Questions</p>
             <p className="font-semibold text-lg">{gameRoom.totalQuestions}</p>

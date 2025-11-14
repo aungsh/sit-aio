@@ -79,7 +79,12 @@ export async function GET(req: Request) {
   try {
     const room = await prisma.gameRoom.findUnique({
       where: { code },
-      include: { questions: true },
+      include: {
+        questions: true,
+        players: {
+          include: { player: true },
+        },
+      },
     });
 
     if (!room) {
@@ -89,7 +94,18 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextResponse.json(room, { status: 200 });
+    // Transform the data to match the component's expected format
+    const formattedRoom = {
+      ...room,
+      players: room.players.map((playerRoom) => ({
+        id: playerRoom.player.id.toString(),
+        name: playerRoom.player.name,
+        score: playerRoom.score,
+        joinedAt: playerRoom.joinedAt,
+      })),
+    };
+
+    return NextResponse.json(formattedRoom, { status: 200 });
   } catch (error) {
     console.error("Error fetching game room:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
