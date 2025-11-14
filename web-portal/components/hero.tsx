@@ -73,7 +73,7 @@ export default function Hero() {
                 </p>
               </div>
             </Link>
-            <Link href="/hoot-ka">
+            <Link href="/classhoot">
               <div className="p-6 border border-gray-200 rounded-lg hover:border-[#ff006e] hover:shadow-md transition-all duration-200 cursor-pointer group">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-[#ff006e] transition-colors">
                   Class Hoot
