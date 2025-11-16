@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       status: "ONGOING",
-      questionIndex: room.currentIndex + 1,
+      questionIndex: room.currentIndex,
       totalQuestions: room.totalQuestions,
       question: question.text,
       option1: question.choice1,
