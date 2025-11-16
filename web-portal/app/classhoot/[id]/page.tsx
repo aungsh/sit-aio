@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import GameWaiting from "@/components/classhoot/GameWaiting";
 import GameOngoingWrapper from "@/components/classhoot/GameOngoingWrapper";
 import { GameRoom } from "@/types/types";
+import GameEnded from "@/components/classhoot/GameEnded";
 
 async function getGameRoom(code: string): Promise<GameRoom | null> {
   try {
@@ -38,6 +39,6 @@ export default async function ClassHootRoomPage({
     // Pass only questions to the client wrapper
     return <GameOngoingWrapper code={gameRoom.code} />;
   } else {
-    return <div>Game Ended</div>;
+    return <GameEnded code={gameRoom.code} />;
   }
 }
