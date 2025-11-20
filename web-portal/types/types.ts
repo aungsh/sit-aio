@@ -47,6 +47,18 @@ type PlayerRoom = {
   score: number;
 };
 
+interface AttendanceRecord {
+  id: number;
+  studentId: number;
+  roomId: number;
+  joinedAt: string;
+  student?: Player;
+  room?: {
+    id: number;
+    name: string;
+  };
+}
+
 export type {
   Player,
   GameRoom,
@@ -54,4 +66,5 @@ export type {
   GameRoomPayload,
   Question,
   PlayerRoom,
+  AttendanceRecord,
 };

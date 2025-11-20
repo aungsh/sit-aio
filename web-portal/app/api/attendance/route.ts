@@ -42,3 +42,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+
+  const date = searchParams.get("date");
+  const start = searchParams.get("start"); // optional
+  const end = searchParams.get("end"); // optional
+
+  if (!date) {
+    return NextResponse.json([], { status: 200 });
+  }
+
+  // Build timestamps
+  const startTime = start ? `${date}T${start}:00` : `${date}T00:00:00`;
+  const endTime = end ? `${date}T${end}:59` : `${date}T23:59:59`;
+
+  const records = await prisma.attendance.findMany({
+    where: {
+      joinedAt: {
+        gte: new Date(startTime),
+        lte: new Date(endTime),
+      },
+    },
+    include: {
+      student: true,
+      room: true,
+    },
+    orderBy: { joinedAt: "desc" },
+  });
+
+  return NextResponse.json(records);
+}
