@@ -40,7 +40,11 @@ export default function Hero() {
               />
             </button>
           </Link>
-          <Link href="/about">
+          <Link
+            href="https://github.com/aungsh/sit-aio"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <button className="w-full sm:w-auto px-8 py-4 border-gray-300 text-gray-700 font-semibold tracking-tight rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-200">
               Visit Github
             </button>
