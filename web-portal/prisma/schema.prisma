@@ -8,11 +8,12 @@ generator client {
 }
 
 model Classrooms {
-    id        Int      @id @default(autoincrement())
-    name      String
-    vacancy   Vacancy  @default(UNKNOWN)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id          Int          @id @default(autoincrement())
+    name        String       @unique
+    vacancy     Vacancy      @default(UNKNOWN)
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    attendances Attendance[]
 }
 
 enum Vacancy {
@@ -64,8 +65,9 @@ model Player {
     name      String
     createdAt DateTime @default(now())
 
-    rooms   PlayerRoom[]
-    answers Answer[]
+    rooms       PlayerRoom[]
+    answers     Answer[]
+    attendances Attendance[]
 }
 
 model PlayerRoom {
@@ -92,4 +94,16 @@ model Answer {
 
     player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
     question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Attendance {
+    id        Int      @id @default(autoincrement())
+    studentId Int
+    roomId    Int
+    joinedAt  DateTime @default(now())
+
+    student Player     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    room    Classrooms @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+    @@unique([studentId, roomId, joinedAt])
 }
