@@ -5,17 +5,12 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code");
-    const indexStr = searchParams.get("index");
 
-    if (!code || !indexStr) {
-      return NextResponse.json(
-        { error: "Missing code or index" },
-        { status: 400 }
-      );
+    if (!code) {
+      return NextResponse.json({ error: "Missing room code" }, { status: 400 });
     }
 
-    const index = parseInt(indexStr, 10);
-
+    // Get room with currentIndex
     const room = await prisma.gameRoom.findUnique({
       where: { code },
       include: { questions: true },
@@ -25,10 +20,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    const question = room.questions.find((q) => q.index === index);
+    // Get question based on room.currentIndex
+    const currentIndex = room.currentIndex;
+
+    const question = room.questions.find((q) => q.index === currentIndex);
+
     if (!question) {
       return NextResponse.json(
-        { error: "Question not found" },
+        { error: "Question not found for currentIndex" },
         { status: 404 }
       );
     }
