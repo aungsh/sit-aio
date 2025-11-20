@@ -4,6 +4,15 @@ import { useState, useEffect, useCallback } from "react";
 import { AttendanceRecord } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+
 import {
   Table,
   TableBody,
@@ -19,9 +28,27 @@ export default function AttendanceViewer() {
   const [date, setDate] = useState(today);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+
+  // ❗️ Use undefined instead of empty string
+  const [selectedRoom, setSelectedRoom] = useState<string | undefined>(
+    undefined
+  );
+
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
+  const [rooms, setRooms] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch rooms
+  useEffect(() => {
+    async function loadRooms() {
+      const res = await fetch("/api/classrooms");
+      const data = await res.json();
+      setRooms(data);
+    }
+    loadRooms();
+  }, []);
+
+  // Fetch attendance
   const fetchAttendance = useCallback(async () => {
     if (!date) return;
 
@@ -32,28 +59,29 @@ export default function AttendanceViewer() {
 
     if (startTime) params.set("start", startTime);
     if (endTime) params.set("end", endTime);
+    if (selectedRoom) params.set("roomId", selectedRoom);
 
     const res = await fetch(`/api/attendance?${params.toString()}`);
     const data = await res.json();
 
     setRecords(data);
     setLoading(false);
-  }, [date, startTime, endTime]);
+  }, [date, startTime, endTime, selectedRoom]);
 
-  // Auto-load today's attendance
   useEffect(() => {
-    (async () => {
-      await fetchAttendance();
-    })();
+    Promise.resolve().then(() => {
+      fetchAttendance();
+    });
   }, [fetchAttendance]);
 
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="">
+      <div>
         <h2 className="text-lg font-semibold mb-4">Filters</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Date */}
           <div className="flex flex-col space-y-1.5">
             <label className="text-sm font-medium">Date</label>
             <Input
@@ -64,6 +92,7 @@ export default function AttendanceViewer() {
             />
           </div>
 
+          {/* Start Time */}
           <div className="flex flex-col space-y-1.5">
             <label className="text-sm font-medium">Start Time</label>
             <Input
@@ -73,6 +102,7 @@ export default function AttendanceViewer() {
             />
           </div>
 
+          {/* End Time */}
           <div className="flex flex-col space-y-1.5">
             <label className="text-sm font-medium">End Time</label>
             <Input
@@ -82,6 +112,28 @@ export default function AttendanceViewer() {
             />
           </div>
 
+          {/* Room Select */}
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-sm font-medium">Room</label>
+            <Select
+              value={selectedRoom}
+              onValueChange={(v) => setSelectedRoom(v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All rooms" />{" "}
+                {/* no empty SelectItem needed */}
+              </SelectTrigger>
+              <SelectContent>
+                {rooms.map((room) => (
+                  <SelectItem key={room.id} value={String(room.id)}>
+                    {room.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* View Button */}
           <div className="flex items-end">
             <Button
               onClick={fetchAttendance}

@@ -49,6 +49,7 @@ export async function GET(req: Request) {
   const date = searchParams.get("date");
   const start = searchParams.get("start"); // optional
   const end = searchParams.get("end"); // optional
+  const roomId = searchParams.get("roomId"); // optional
 
   if (!date) {
     return NextResponse.json([], { status: 200 });
@@ -64,6 +65,7 @@ export async function GET(req: Request) {
         gte: new Date(startTime),
         lte: new Date(endTime),
       },
+      ...(roomId ? { roomId: Number(roomId) } : {}),
     },
     include: {
       student: true,
