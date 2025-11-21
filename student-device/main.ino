@@ -10,9 +10,43 @@
 #endif
 
 // ==============================
+// Project metadata
+// ==============================
+#define PROJECT_DISPLAY_NAME "CLASSHOOT"
+
+// ==============================
 // Display
 // ==============================
 TinyScreen display = TinyScreen(TinyScreenPlus);
+#define SCREEN_WIDTH 96
+
+// ==============================
+// Screen Drawing Helpers
+// ==============================
+uint8_t menuTextY[8] = {1 * 12 - 1, 2 * 12 - 1, 3 * 12 - 1, 4 * 12 - 1, 5 * 12 - 1, 6 * 12 - 1, 7 * 12 - 3, 8 * 12 - 3};
+
+void leftArrow(int x, int y) {
+  display.drawLine(x + 2, y - 2, x + 2, y + 2, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 1, y + 1, 0xFFFF);
+  display.drawLine(x + 0, y - 0, x + 0, y + 0, 0xFFFF);
+}
+
+void rightArrow(int x, int y) {
+  display.drawLine(x + 0, y - 2, x + 0, y + 2, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 1, y + 1, 0xFFFF);
+  display.drawLine(x + 2, y - 0, x + 2, y + 0, 0xFFFF);
+}
+
+void upArrow(int x, int y) {
+  display.drawLine(x + 0, y - 0, x + 4, y - 0, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 3, y - 1, 0xFFFF);
+  display.drawLine(x + 2, y - 2, x + 2, y - 2, 0xFFFF);
+}
+void downArrow(int x, int y) {
+  display.drawLine(x + 0, y + 0, x + 4, y + 0, 0xFFFF);
+  display.drawLine(x + 1, y + 1, x + 3, y + 1, 0xFFFF);
+  display.drawLine(x + 2, y + 2, x + 2, y + 2, 0xFFFF);
+}
 
 // ==============================
 // Wi-Fi Credentials (campus WiFi)
@@ -46,6 +80,7 @@ String startResponse = "";
 // ==============================
 enum Page
 {
+    STANDBY,
     HOME,
     ATTENDANCE,
     VACANCY,
@@ -53,10 +88,10 @@ enum Page
     KAHOOT_CONFIRM,
     KAHOOT_QUESTION,
     KAHOOT_WAIT,
-    KAHOOT_END
+    KAHOOT_END,
 };
-Page currentPage = HOME;
 bool needsRedraw = true;
+Page currentPage = STANDBY;
 
 // ==============================
 // Home Menu
@@ -150,6 +185,10 @@ void loop()
 
     switch (currentPage)
     {
+    case STANDBY:
+      if (needsRedraw) showStandby();
+      handleStandbyButtons(b);
+      break;
     case HOME:
         if (needsRedraw)
             showHome();
@@ -196,148 +235,79 @@ void loop()
 }
 
 // ==============================
-// HOME SCREEN
+// STANDBY PAGE
 // ==============================
+void showStandby() {
+  display.clearScreen();
+  display.setCursor(9, menuTextY[6]);
+  char intName[20];
+  int width = display.getPrintWidth(PROJECT_DISPLAY_NAME);
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2 - 1, menuTextY[0] - 1);
+  display.fontColor(0xFFFF, NULL);
+  display.print(PROJECT_DISPLAY_NAME);
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2 + 1, menuTextY[0] + 1);
+  display.print(PROJECT_DISPLAY_NAME);
+  display.setCursor(SCREEN_WIDTH, menuTextY[6]);
+  width = display.getPrintWidth((char *)studentName);
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2, menuTextY[1]+1);
+  display.print(studentName);
+  width = display.getPrintWidth((char *)String(studentID).c_str());
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2, menuTextY[2]+1);
+  display.print(String(studentID).c_str());
+  
+  leftArrow(0, 45 + 2);
+  display.drawLine(1, 54,    1, 56, 0xFFFF);
+  display.drawLine(1, 56,    6, 56, 0xFFFF);
+  display.setCursor(8, 52);
+  display.print("Menu");
+  needsRedraw = false;
+}
+
+void handleStandbyButtons(unsigned int b) {
+  if(b & TSButtonLowerLeft) {
+    currentPage = HOME;
+    needsRedraw=true;
+    delay(200);
+  }
+}
+
+// ==============================
+// HOME PAGE
+// ==============================
+
 void showHome()
 {
-    display.clearScreen();
-    for (int i = 0; i < 3; i++)
-    {
-        int y = 10 + i * 20;
+    display.fontColor(TS_16b_White, NULL);
+    downArrow(90, 10+2);
+    rightArrow(90,45+2);
+    leftArrow(0, 45+2);
+    display.setCursor(8, 52);
+    //display.print("Back");
 
+    display.fontColor(TS_16b_White, TS_16b_Black);
+
+    int w = display.getPrintWidth(PROJECT_DISPLAY_NAME);
+    display.setCursor((SCREEN_WIDTH - w) / 2, 5);
+    display.print(PROJECT_DISPLAY_NAME);
+
+    for (int i = 0; i < numMenuItems; i++)
+    {
+        w = display.getPrintWidth((char *)menuItems[i]);
+        int y = 20 + i * 15;
         if (i == menuIndex)
         {
-            display.drawRect(0, y - 2, 78, 12, 1, TS_16b_White);
-            display.fontColor(TS_16b_Black, TS_16b_White);
-        }
-        else
-        {
+            w += display.getPrintWidth(">  <");
+            display.setCursor((SCREEN_WIDTH-w)/2, y);
             display.fontColor(TS_16b_White, TS_16b_Black);
+            display.print("> ");
+        } else {
+            display.fontColor(TS_8b_Gray, NULL);
+            display.setCursor((SCREEN_WIDTH-w)/2, y);
         }
+        display.print(menuItems[i]);
 
-        // Convert const char* to mutable char[]
-        char buffer[20];
-        strncpy(buffer, menuItems[i], sizeof(buffer));
-        buffer[sizeof(buffer) - 1] = '\0';
-
-        int w = display.getPrintWidth(buffer);
-        display.setCursor((80 - w) / 2, y);
-        display.print(buffer);
-    }
-    needsRedraw = false;
-}
-
-// ==============================
-// ATTENDANCE & VACANCY PAGES (old static pages, still available)
-// ==============================
-void showAttendance()
-{
-    display.clearScreen();
-    display.fontColor(TS_16b_White, TS_16b_Black);
-    char text[] = "ATTENDANCE PAGE";
-    int w = display.getPrintWidth(text);
-    display.setCursor((100 - w) / 2, 20);
-    display.print(text);
-    display.setCursor(2, 55);
-    display.print("<-");
-    needsRedraw = false;
-}
-
-void showVacancy()
-{
-    display.clearScreen();
-    display.fontColor(TS_16b_White, TS_16b_Black);
-    char text[] = "ROOM VACANCY";
-    int w = display.getPrintWidth(text);
-    display.setCursor((100 - w) / 2, 20);
-    display.print(text);
-    display.setCursor(2, 55);
-    display.print("<-");
-    needsRedraw = false;
-}
-
-// ==============================
-// KAHOOT DIGIT ENTRY
-// ==============================
-void showDigitEntry()
-{
-    display.clearScreen();
-    display.fontColor(TS_16b_White, TS_16b_Black);
-    display.setCursor(17, 20);
-    display.print("Enter code:");
-    display.setCursor(23, 40);
-    for (int i = 0; i < 3; i++)
-    {
-        if (i == currentDigit)
-            display.print("[" + String(digits[i]) + "]");
-        else
-            display.print(" " + String(digits[i]) + " ");
-    }
-
-    // Buttons Hints
-    display.setCursor(2, 3);
-    display.print(">>");
-
-    display.drawLine(84, 7, 82, 5, TS_16b_White);
-    display.drawLine(84, 7, 86, 5, TS_16b_White);
-
-    display.drawLine(84, 10, 82, 8, TS_16b_White);
-    display.drawLine(84, 10, 86, 8, TS_16b_White);
-
-    display.setCursor(80, 55);
-    display.print("->");
-
-    needsRedraw = false;
-}
-
-// ==============================
-// KAHOOT CONFIRM
-// ==============================
-void showConfirmation()
-{
-    display.clearScreen();
-    display.fontColor(TS_16b_White, TS_16b_Black);
-    display.setCursor(5, 10);
-    display.print("You entered:");
-    display.setCursor(70, 10);
-    for (int i = 0; i < 3; i++)
-        display.print(digits[i]);
-
-    // Simulate join response
-    StaticJsonDocument<512> doc;
-    DeserializationError error = deserializeJson(doc, joinResponse);
-    const char *msg = doc["message"];
-    const char *status = doc["gameRoom"]["status"];
-
-    if (error)
-    {
-        display.setCursor(10, 30);
-        display.print("Error parsing JSON");
-    }
-    else
-    {
-        const char *message = doc["message"];
-
-        if (strcmp(message, "Game room not found") == 0)
-        {
-            display.setCursor(10, 30);
-            display.print("Room not found");
-            display.setCursor(2, 55);
-            display.print("<-"); // back button
-        }
-        else if (strcmp(message, "Student joined the game room") == 0)
-        {
-            const char *status = doc["gameRoom"]["status"];
-            display.setCursor(20, 30);
-            display.print(status);
-            display.setCursor(2, 55);
-            display.print("<-"); // back button
-            if (!strcmp(status, "ENDED") == 0)
-            {
-                display.setCursor(60, 55);
-                display.print("Start->"); // start game button
-            }
-        }
+        if (i == menuIndex)
+            display.print(" <");
     }
 
     needsRedraw = false;
@@ -1395,4 +1365,446 @@ void runAttendance() {
 
     // Always reconnect to campus WiFi after attendance
     reconnectCampusWiFi();
+}
+// ==============================
+// ATTENDANCE & VACANCY PAGES (legacy Attendance page left as-is but not used)
+// ==============================
+void showAttendance()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+    char text[] = "ATTENDANCE PAGE";
+    int w = display.getPrintWidth(text);
+    display.setCursor((100 - w) / 2, 20);
+    display.print(text);
+    display.setCursor(2, 55);
+    display.print("<-");
+    needsRedraw = false;
+}
+
+void showVacancy()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+    char text[] = "VACANCY PAGE";
+    int w = display.getPrintWidth(text);
+    display.setCursor((100 - w) / 2, 20);
+    display.print(text);
+    display.setCursor(2, 55);
+    display.print("<-");
+    needsRedraw = false;
+}
+
+// ==============================
+// KAHOOT DIGIT ENTRY
+// ==============================
+void showDigitEntry()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+    display.setCursor(17, 20);
+    display.print("Enter code:");
+    display.setCursor(23, 40);
+    for (int i = 0; i < 3; i++)
+    {
+        if (i == currentDigit)
+            display.print("[" + String(digits[i]) + "]");
+        else
+            display.print(" " + String(digits[i]) + " ");
+    }
+    needsRedraw = false;
+}
+
+// ==============================
+// KAHOOT CONFIRMATION
+// ==============================
+void showConfirmation()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+    display.setCursor(5, 20);
+    display.print("Code: ");
+    display.print(digits[0]);
+    display.print(digits[1]);
+    display.print(digits[2]);
+    display.setCursor(10, 40);
+    display.print("Press upper-right");
+    display.setCursor(10, 50);
+    display.print("to confirm");
+    needsRedraw = false;
+}
+
+// ==============================
+// KAHOOT QUESTION SCREEN
+// ==============================
+
+void showQuestionScreen()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+
+    if (!startResponse.length())
+    {
+        display.setCursor(5, 20);
+        display.print("No questions.");
+        needsRedraw = false;
+        return;
+    }
+
+    StaticJsonDocument<1024> doc;
+    DeserializationError error = deserializeJson(doc, startResponse);
+    if (error)
+    {
+        display.setCursor(5, 20);
+        display.print("JSON error");
+        needsRedraw = false;
+        return;
+    }
+
+    JsonArray questions = doc["questions"].as<JsonArray>();
+    questionCount = questions.size();
+    if (questionIndex < 0 || questionIndex >= questionCount)
+        questionIndex = 0;
+
+    JsonObject qObj = questions[questionIndex];
+    const char *questionText = qObj["question"];
+    JsonArray options = qObj["options"].as<JsonArray>();
+
+    display.setCursor(0, 5);
+    display.print("Q");
+    display.print(questionIndex + 1);
+    display.print("/");
+    display.print(questionCount);
+
+    display.setCursor(0, 15);
+    display.print(questionText);
+
+    int y = 30;
+    for (int i = 0; i < options.size(); i++)
+    {
+        display.setCursor(5, y);
+        display.print(i + 1);
+        display.print(": ");
+        display.print(options[i].as<const char *>());
+        y += 10;
+    }
+
+    display.setCursor(5, 60);
+    display.print("Press 1/2/3/4");
+
+    needsRedraw = false;
+}
+
+// ==============================
+// KAHOOT WAIT SCREEN
+// ==============================
+void showWaitScreen()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+    display.setCursor(10, 20);
+    display.print("Awaiting next");
+    display.setCursor(10, 30);
+    display.print("question...");
+    needsRedraw = false;
+}
+
+// ==============================
+// KAHOOT GAME END SCREEN
+// ==============================
+void showGameEnd()
+{
+    display.clearScreen();
+    display.fontColor(TS_16b_White, TS_16b_Black);
+    display.setCursor(10, 20);
+    display.print("Game over!");
+    display.setCursor(10, 30);
+    display.print("Score: ");
+    display.print(totalScore);
+    needsRedraw = false;
+}
+
+// ==============================
+// Button Handlers
+// ==============================
+void handleHomeButtons(unsigned int b)
+{
+    if (b &TSButtonLowerLeft) {
+        currentPage = STANDBY;
+        needsRedraw = true;
+        delay(200);
+    }
+    if (b & TSButtonUpperRight)
+    {
+        menuIndex++;
+        if (menuIndex > 2)
+            menuIndex = 0;
+        needsRedraw = true;
+        delay(200);
+    }
+    if (b & TSButtonLowerRight)
+    {
+        switch (menuIndex)
+        {
+        case 0:
+            currentPage = ATTENDANCE;
+            break;
+        case 1:
+            currentPage = VACANCY;
+            break;
+        case 2:
+            currentPage = KAHOOT_DIGIT;
+            break;
+        }
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+void handleBackButton(unsigned int b)
+{
+    if (b & TSButtonLowerLeft)
+    {
+        currentPage = HOME;
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+void handleDigitEntryButtons(unsigned int b)
+{
+    if (b & TSButtonUpperRight)
+    {
+        digits[currentDigit]++;
+        if (digits[currentDigit] > 9)
+            digits[currentDigit] = 0;
+        needsRedraw = true;
+        delay(200);
+    }
+    if (b & TSButtonUpperLeft)
+    {
+        currentDigit--;
+        if (currentDigit < 0)
+            currentDigit = 2;
+        needsRedraw = true;
+        delay(200);
+    }
+    if (b & TSButtonLowerRight)
+    {
+        currentDigit++;
+        if (currentDigit > 2)
+            currentDigit = 0;
+        needsRedraw = true;
+        delay(200);
+    }
+    if (b & TSButtonLowerLeft)
+    {
+        currentPage = KAHOOT_CONFIRM;
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+void handleConfirmationButtons()
+{
+    unsigned int b = display.getButtons();
+    if (b & TSButtonUpperRight)
+    {
+        int gameCode = digits[0] * 100 + digits[1] * 10 + digits[2];
+        SerialMonitorInterface.print("Sending join request for game code: ");
+        SerialMonitorInterface.println(gameCode);
+
+        WiFiClient client;
+        if (client.connect(server, serverPort))
+        {
+            StaticJsonDocument<256> doc;
+            doc["studentId"] = studentID;
+            doc["studentName"] = studentName;
+            doc["gameCode"] = gameCode;
+
+            String requestBody;
+            serializeJson(doc, requestBody);
+
+            client.print("POST ");
+            client.print(apiPath);
+            client.println(" HTTP/1.1");
+            client.print("Host: ");
+            client.println(server);
+            client.println("Content-Type: application/json");
+            client.print("Content-Length: ");
+            client.println(requestBody.length());
+            client.println();
+            client.print(requestBody);
+
+            unsigned long start = millis();
+            while (!client.available() && millis() - start < 5000)
+            {
+                delay(100);
+            }
+
+            if (client.available())
+            {
+                String response = client.readString();
+                SerialMonitorInterface.println("Response:");
+                SerialMonitorInterface.println(response);
+
+                int idx = response.indexOf("\r\n\r\n");
+                if (idx >= 0)
+                    joinResponse = response.substring(idx + 4);
+                else
+                    joinResponse = response;
+
+                currentPage = KAHOOT_WAIT;
+            }
+            else
+            {
+                SerialMonitorInterface.println("No response from server");
+            }
+
+            client.stop();
+        }
+        else
+        {
+            SerialMonitorInterface.println("Connection failed");
+        }
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+void handleQuestionButtons(unsigned int b)
+{
+    int selectedAnswer = 0;
+    if (b & TSButtonUpperLeft)
+        selectedAnswer = 1;
+    else if (b & TSButtonUpperRight)
+        selectedAnswer = 2;
+    else if (b & TSButtonLowerLeft)
+        selectedAnswer = 3;
+    else if (b & TSButtonLowerRight)
+        selectedAnswer = 4;
+
+    if (selectedAnswer != 0)
+    {
+        answer = selectedAnswer;
+        submitAnswer();
+        currentPage = KAHOOT_WAIT;
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+void handleWaitScreen(unsigned int b)
+{
+    if (b & TSButtonUpperRight)
+    {
+        WiFiClient client;
+        if (client.connect(server, serverPort))
+        {
+            client.print("GET ");
+            client.print(checkApiPath);
+            client.println(" HTTP/1.1");
+            client.print("Host: ");
+            client.println(server);
+            client.println("Connection: close");
+            client.println();
+
+            unsigned long start = millis();
+            while (!client.available() && millis() - start < 5000)
+            {
+                delay(100);
+            }
+
+            if (client.available())
+            {
+                String response = client.readString();
+                SerialMonitorInterface.println("Check response:");
+                SerialMonitorInterface.println(response);
+
+                int idx = response.indexOf("\r\n\r\n");
+                String jsonString;
+                if (idx >= 0)
+                    jsonString = response.substring(idx + 4);
+                else
+                    jsonString = response;
+
+                StaticJsonDocument<512> doc;
+                DeserializationError error = deserializeJson(doc, jsonString);
+                if (!error)
+                {
+                    if (doc["status"] == "question")
+                    {
+                        startResponse = jsonString;
+                        currentPage = KAHOOT_QUESTION;
+                    }
+                    else if (doc["status"] == "end")
+                    {
+                        totalScore = doc["finalScore"];
+                        currentPage = KAHOOT_END;
+                    }
+                }
+            }
+            client.stop();
+        }
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+void handleGameEndButtons(unsigned int b)
+{
+    if (b & TSButtonLowerLeft)
+    {
+        currentPage = HOME;
+        needsRedraw = true;
+        delay(200);
+    }
+}
+
+// ==============================
+// Answer Submission
+// ==============================
+void submitAnswer()
+{
+    StaticJsonDocument<256> doc;
+    doc["answer"] = answer;
+
+    String requestBody;
+    serializeJson(doc, requestBody);
+
+    WiFiClient client;
+    if (client.connect(server, serverPort))
+    {
+        client.print("POST ");
+        client.print(startApiPath);
+        client.println(" HTTP/1.1");
+        client.print("Host: ");
+        client.println(server);
+        client.println("Content-Type: application/json");
+        client.print("Content-Length: ");
+        client.println(requestBody.length());
+        client.println();
+        Client.print(requestBody);
+
+        unsigned long start = millis();
+        while (!client.available() && millis() - start < 5000)
+        {
+            delay(100);
+        }
+
+        if (client.available())
+        {
+            String response = client.readString();
+            SerialMonitorInterface.println("Submit response:");
+            SerialMonitorInterface.println(response);
+        }
+
+        client.stop();
+    }
 }
