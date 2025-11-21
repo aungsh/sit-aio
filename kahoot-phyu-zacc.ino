@@ -95,7 +95,7 @@ const String FAKE_START_RESPONSE = R"rawliteral(
 // ==============================
 // Pages
 // ==============================
-enum Page { STANDBY, HOME, ATTENDANCE, VACANCY, KAHOOT_DIGIT, KAHOOT_CONFIRM, KAHOOT_QUESTION, KAHOOT_END};
+enum Page { STANDBY, HOME, ATTENDANCE, POMODORO, KAHOOT_DIGIT, KAHOOT_CONFIRM, KAHOOT_QUESTION, KAHOOT_END};
 Page currentPage = STANDBY;
 bool needsRedraw = true;
 
@@ -152,8 +152,8 @@ void loop() {
       if (needsRedraw) showAttendance();
       handleBackButton(b);
       break;
-    case VACANCY:
-      if (needsRedraw) showVacancy();
+    case POMODORO:
+      if (needsRedraw) showPomodoro();
       handleBackButton(b);
       break;
     case KAHOOT_DIGIT:
@@ -252,8 +252,8 @@ void handleHomeButtons(unsigned int b){
   if(b & TSButtonLowerRight){ 
     switch(menuIndex){
       case 0: currentPage=ATTENDANCE; break;
-      case 1: currentPage=VACANCY; break;
-      case 2: currentPage=KAHOOT_DIGIT; break;
+      case 1: currentPage=KAHOOT_DIGIT; break;
+      case 2: currentPage=POMODORO; break;
     }
     needsRedraw=true; delay(200);
   }
@@ -279,10 +279,10 @@ void showAttendance(){
   needsRedraw=false;
 }
 
-void showVacancy(){
+void showPomodoro(){
   display.clearScreen();
   display.fontColor(TS_16b_White, TS_16b_Black);
-  char text[]="ROOM VACANCY";
+  char text[]="POMODORO";
   int w=display.getPrintWidth(text);
   display.setCursor((100-w)/2,20); display.print(text);
   display.setCursor(2,55); display.print("<-");
