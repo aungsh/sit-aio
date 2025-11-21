@@ -65,9 +65,10 @@ model Player {
     name      String
     createdAt DateTime @default(now())
 
-    rooms       PlayerRoom[]
-    answers     Answer[]
-    attendances Attendance[]
+    rooms         PlayerRoom[]
+    answers       Answer[]
+    attendances   Attendance[]
+    studySessions StudySession[]
 }
 
 model PlayerRoom {
@@ -106,4 +107,15 @@ model Attendance {
     room    Classrooms @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
     @@unique([studentId, roomId, joinedAt])
+}
+
+model StudySession {
+    id          Int       @id @default(autoincrement())
+    studentId   Int
+    startTime   DateTime  @default(now())
+    endTime     DateTime?
+    durationMin Int?
+    createdAt   DateTime  @default(now())
+
+    student Player @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
