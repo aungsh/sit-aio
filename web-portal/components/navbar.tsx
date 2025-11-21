@@ -9,6 +9,7 @@ const navLinks = [
   { name: "Room Vacancy", href: "/room-vacancy" },
   { name: "Attendance", href: "/attendance" },
   { name: "Class Hoot", href: "/classhoot" },
+  { name: "Strady", href: "/strady" },
   { name: "About Us", href: "/about" },
 ];
 
