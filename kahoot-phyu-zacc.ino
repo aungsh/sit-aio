@@ -15,6 +15,37 @@
 TinyScreen display = TinyScreen(TinyScreenPlus);
 
 // ==============================
+// Screen Drawing Helpers
+// ==============================
+uint8_t menuTextY[8] = {1 * 12 - 1, 2 * 12 - 1, 3 * 12 - 1, 4 * 12 - 1, 5 * 12 - 1, 6 * 12 - 1, 7 * 12 - 3, 8 * 12 - 3};
+
+char *student_name = "Aungsh";
+char *student_id = "2501909";
+
+void leftArrow(int x, int y) {
+  display.drawLine(x + 2, y - 2, x + 2, y + 2, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 1, y + 1, 0xFFFF);
+  display.drawLine(x + 0, y - 0, x + 0, y + 0, 0xFFFF);
+}
+
+void rightArrow(int x, int y) {
+  display.drawLine(x + 0, y - 2, x + 0, y + 2, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 1, y + 1, 0xFFFF);
+  display.drawLine(x + 2, y - 0, x + 2, y + 0, 0xFFFF);
+}
+
+void upArrow(int x, int y) {
+  display.drawLine(x + 0, y - 0, x + 4, y - 0, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 3, y - 1, 0xFFFF);
+  display.drawLine(x + 2, y - 2, x + 2, y - 2, 0xFFFF);
+}
+void downArrow(int x, int y) {
+  display.drawLine(x + 0, y + 0, x + 4, y + 0, 0xFFFF);
+  display.drawLine(x + 1, y + 1, x + 3, y + 1, 0xFFFF);
+  display.drawLine(x + 2, y + 2, x + 2, y + 2, 0xFFFF);
+}
+
+// ==============================
 // Fake API responses
 // ==============================
 const char* apiPath = "/api/classhoot/check";
@@ -64,15 +95,19 @@ const String FAKE_START_RESPONSE = R"rawliteral(
 // ==============================
 // Pages
 // ==============================
-enum Page { HOME, ATTENDANCE, VACANCY, KAHOOT_DIGIT, KAHOOT_CONFIRM, KAHOOT_QUESTION, KAHOOT_END};
-Page currentPage = HOME;
+enum Page { STANDBY, HOME, ATTENDANCE, VACANCY, KAHOOT_DIGIT, KAHOOT_CONFIRM, KAHOOT_QUESTION, KAHOOT_END};
+Page currentPage = STANDBY;
 bool needsRedraw = true;
 
 // ==============================
 // Home Menu
 // ==============================
 int menuIndex = 0;
-const char* menuItems[] = {"Attendance", "Room Vacancy", "Kahoot"};
+const char* menuItems[] = {
+  "Attendance",
+  "Kahoot",
+  "Pomodoro",
+};
 
 // ==============================
 // Kahoot variables
@@ -105,6 +140,10 @@ void loop() {
   unsigned int b = display.getButtons();
 
   switch(currentPage) {
+    case STANDBY:
+      if (needsRedraw) showStandby();
+      handleStandbyButtons(b);
+      break;
     case HOME: 
       if (needsRedraw) showHome();
       handleHomeButtons(b);
@@ -138,16 +177,54 @@ void loop() {
   display.flush();
 }
 
+void handleStandbyButtons(unsigned int b){
+  if(b & TSButtonLowerLeft) {
+    currentPage = HOME;
+    needsRedraw=true;
+    delay(200);
+  }
+}
+
+void showStandby() {
+  display.clearScreen();
+  display.setCursor(9, menuTextY[6]);
+  char intName[20];
+  int width = display.getPrintWidth("SIT AIO");
+  display.setCursor(96 / 2 - width / 2 - 1, menuTextY[0] - 1);
+  display.fontColor(0xFFFF, NULL);
+  display.print("SIT AIO");
+  display.setCursor(96 / 2 - width / 2 + 1, menuTextY[0] + 1);
+  display.print("SIT AIO");
+  display.setCursor(70, menuTextY[6]);
+  width = display.getPrintWidth(student_name);
+  display.setCursor(96 / 2 - width / 2, menuTextY[1]+1);
+  display.print(student_name);
+  width = display.getPrintWidth(student_id);
+  display.setCursor(96 / 2 - width / 2, menuTextY[2]+1);
+  display.print(student_id);
+  
+  leftArrow(0, 57);
+  display.setCursor(8, 52);
+  display.print("Menu");
+  needsRedraw = false;
+}
+
 // ==============================
 // HOME SCREEN
 // ==============================
 void showHome() {
   display.clearScreen();
-  for(int i = 0; i < 3; i++){
-    int y = 10 + i*20;
+  display.fontColor(TS_16b_White, NULL);
+  downArrow(90, 10+2);
+  rightArrow(90,45+2);
+  leftArrow(0, 57);
+  display.setCursor(8, 52);
+  display.print("Back");
+  for(int i = 0; i<3; i++){
+    int y = 10 + i*12;
 
     if(i == menuIndex) {
-      display.drawRect(0, y-2, 78, 12, 1, TS_16b_White);
+      display.drawRect(10, y-2, 76, 12, 1, TS_16b_White);
       display.fontColor(TS_16b_Black, TS_16b_White);
     } else {
       display.fontColor(TS_16b_White, TS_16b_Black);
@@ -159,13 +236,18 @@ void showHome() {
     buffer[sizeof(buffer)-1] = '\0';
 
     int w = display.getPrintWidth(buffer);
-    display.setCursor((80 - w)/2, y);
+    display.setCursor((96 - w)/2, y);
     display.print(buffer);
   }
   needsRedraw = false;
 }
 
 void handleHomeButtons(unsigned int b){
+  if(b &TSButtonLowerLeft) {
+    currentPage = STANDBY;
+    needsRedraw = true;
+    delay(200);
+  }
   if(b & TSButtonUpperRight){ menuIndex++; if(menuIndex>2) menuIndex=0; needsRedraw=true; delay(200);}
   if(b & TSButtonLowerRight){ 
     switch(menuIndex){
