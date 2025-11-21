@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const { studySessionId } = await req.json();
 
-    if (!studySessionId) {
+    if (studySessionId === undefined) {
       return NextResponse.json(
         { error: "studySessionId is required" },
         { status: 400 }
