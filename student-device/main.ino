@@ -10,21 +10,55 @@
 #endif
 
 // ==============================
+// Project metadata
+// ==============================
+#define PROJECT_DISPLAY_NAME "CLASSHOOT"
+
+// ==============================
 // Display
 // ==============================
 TinyScreen display = TinyScreen(TinyScreenPlus);
+#define SCREEN_WIDTH 96
+
+// ==============================
+// Screen Drawing Helpers
+// ==============================
+uint8_t menuTextY[8] = {1 * 12 - 1, 2 * 12 - 1, 3 * 12 - 1, 4 * 12 - 1, 5 * 12 - 1, 6 * 12 - 1, 7 * 12 - 3, 8 * 12 - 3};
+
+void leftArrow(int x, int y) {
+  display.drawLine(x + 2, y - 2, x + 2, y + 2, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 1, y + 1, 0xFFFF);
+  display.drawLine(x + 0, y - 0, x + 0, y + 0, 0xFFFF);
+}
+
+void rightArrow(int x, int y) {
+  display.drawLine(x + 0, y - 2, x + 0, y + 2, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 1, y + 1, 0xFFFF);
+  display.drawLine(x + 2, y - 0, x + 2, y + 0, 0xFFFF);
+}
+
+void upArrow(int x, int y) {
+  display.drawLine(x + 0, y - 0, x + 4, y - 0, 0xFFFF);
+  display.drawLine(x + 1, y - 1, x + 3, y - 1, 0xFFFF);
+  display.drawLine(x + 2, y - 2, x + 2, y - 2, 0xFFFF);
+}
+void downArrow(int x, int y) {
+  display.drawLine(x + 0, y + 0, x + 4, y + 0, 0xFFFF);
+  display.drawLine(x + 1, y + 1, x + 3, y + 1, 0xFFFF);
+  display.drawLine(x + 2, y + 2, x + 2, y + 2, 0xFFFF);
+}
 
 // ==============================
 // Wi-Fi Credentials
 // ==============================
-const char* ssid = ""; // your network SSID (name)
-const char* pass = ""; // your network password
+const char* ssid = "RIZiP17"; // your network SSID (name)
+const char* pass = "Tr*toPath369"; // your network password
 
 // ==============================
 // Student Credentials
 // ==============================
-const int studentID = ; // studentID
-const char* studentName = ""; // studentName
+const int studentID = 2501769; // studentID
+const char* studentName = "Rifa"; // studentName
 
 // ==============================
 // Room Module / Attendance config
@@ -58,6 +92,7 @@ bool needsRedraw = true;
 
 enum Page
 {
+    STANDBY,
     HOME,
     ATTENDANCE,
     VACANCY,
@@ -65,9 +100,9 @@ enum Page
     KAHOOT_CONFIRM,
     KAHOOT_QUESTION,
     KAHOOT_WAIT,
-    KAHOOT_END
+    KAHOOT_END,
 };
-Page currentPage = HOME;
+Page currentPage = STANDBY;
 
 const int numMenuItems = 3;
 const char *menuItems[numMenuItems] = {"Attendance", "Vacancy", "Kahoot"};
@@ -146,6 +181,10 @@ void loop()
 
     switch (currentPage)
     {
+    case STANDBY:
+      if (needsRedraw) showStandby();
+      handleStandbyButtons(b);
+      break;
     case HOME:
         if (needsRedraw)
             showHome();
@@ -154,7 +193,7 @@ void loop()
     case ATTENDANCE:
         // Run attendance flow (Room Module) then return to HOME
         runAttendance();
-        currentPage = HOME;
+        currentPage = ATTENDANCE;
         needsRedraw = true;
         break;
     case VACANCY:
@@ -193,33 +232,80 @@ void loop()
 }
 
 // ==============================
+// STANDBY PAGE
+// ==============================
+void showStandby() {
+  display.clearScreen();
+  display.setCursor(9, menuTextY[6]);
+  char intName[20];
+  int width = display.getPrintWidth(PROJECT_DISPLAY_NAME);
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2 - 1, menuTextY[0] - 1);
+  display.fontColor(0xFFFF, NULL);
+  display.print(PROJECT_DISPLAY_NAME);
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2 + 1, menuTextY[0] + 1);
+  display.print(PROJECT_DISPLAY_NAME);
+  display.setCursor(SCREEN_WIDTH, menuTextY[6]);
+  width = display.getPrintWidth((char *)studentName);
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2, menuTextY[1]+1);
+  display.print(studentName);
+  width = display.getPrintWidth((char *)String(studentID).c_str());
+  display.setCursor(SCREEN_WIDTH / 2 - width / 2, menuTextY[2]+1);
+  display.print(String(studentID).c_str());
+  
+  leftArrow(0, 45 + 2);
+  display.drawLine(1, 54,    1, 56, 0xFFFF);
+  display.drawLine(1, 56,    6, 56, 0xFFFF);
+  display.setCursor(8, 52);
+  display.print("Menu");
+  needsRedraw = false;
+}
+
+void handleStandbyButtons(unsigned int b) {
+  if(b & TSButtonLowerLeft) {
+    currentPage = HOME;
+    needsRedraw=true;
+    delay(200);
+  }
+}
+
+// ==============================
 // HOME PAGE
 // ==============================
+
 void showHome()
 {
     display.clearScreen();
+    display.fontColor(TS_16b_White, NULL);
+    downArrow(90, 10+2);
+    rightArrow(90,45+2);
+    leftArrow(0, 45+2);
+    display.setCursor(8, 52);
+    //display.print("Back");
+
     display.fontColor(TS_16b_White, TS_16b_Black);
 
-    char title[] = "CLASSHOOT";
-    int w = display.getPrintWidth(title);
-    display.setCursor((96 - w) / 2, 5);
-    display.print(title);
+    int w = display.getPrintWidth(PROJECT_DISPLAY_NAME);
+    display.setCursor((SCREEN_WIDTH - w) / 2, 5);
+    display.print(PROJECT_DISPLAY_NAME);
 
     for (int i = 0; i < numMenuItems; i++)
     {
+        w = display.getPrintWidth((char *)menuItems[i]);
         int y = 20 + i * 15;
         if (i == menuIndex)
         {
-            display.setCursor(5, y);
-            display.print(">");
+            w += display.getPrintWidth(">  <");
+            display.setCursor((SCREEN_WIDTH-w)/2, y);
+            display.fontColor(TS_16b_White, TS_16b_Black);
+            display.print("> ");
+        } else {
+            display.fontColor(TS_8b_Gray, NULL);
+            display.setCursor((SCREEN_WIDTH-w)/2, y);
         }
-        else
-        {
-            display.setCursor(5, y);
-            display.print(" ");
-        }
-        display.setCursor(15, y);
         display.print(menuItems[i]);
+
+        if (i == menuIndex)
+            display.print(" <");
     }
 
     needsRedraw = false;
@@ -889,6 +975,11 @@ void showGameEnd()
 // ==============================
 void handleHomeButtons(unsigned int b)
 {
+    if (b &TSButtonLowerLeft) {
+        currentPage = STANDBY;
+        needsRedraw = true;
+        delay(200);
+    }
     if (b & TSButtonUpperRight)
     {
         menuIndex++;
