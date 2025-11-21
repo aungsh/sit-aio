@@ -17,14 +17,14 @@ TinyScreen display = TinyScreen(TinyScreenPlus);
 // ==============================
 // Wi-Fi Credentials
 // ==============================
-const char* ssid = "N1sh0"; // your network SSID (name)
-const char* pass = "jfbjz11901"; // your network password
+const char* ssid = ""; // your network SSID (name)
+const char* pass = ""; // your network password
 
 // ==============================
 // Student Credentials
 // ==============================
-const int studentID = 2500339; // studentID
-const char* studentName = "Augn"; // studentName
+const int studentID = ; // studentID
+const char* studentName = ""; // studentName
 
 // ==============================
 // Room Module / Attendance config
