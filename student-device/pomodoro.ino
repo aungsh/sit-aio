@@ -17,13 +17,16 @@
 #include <TinyScreen.h>
 #include <ArduinoJson.h>
 #include <WiFi101.h>
-#if defined(ARGDUINO_ARCH_SAMD)
+
+#if defined(ARDUINO_ARCH_SAMD)
 #define SerialMonitorInterface SerialUSB
 #else
 #define SerialMonitorInterface Serial
 #endif
 
-TinyScreen display = TinyScreen(TinyScreenPlus);
+JsonDocument api_res_deserialized;
+
+TinyScreen display = TinyScreen(TinyScreenDefault);
 
 // Module states
 enum PomodoroState {
@@ -44,15 +47,16 @@ struct TimerMode {
 };
 
 // Wifi
-const char* ssid = "Ngone";
-const char* pass = "ngonngon";
+const char* ssid = "Stephen Hawking's Penis";
+const char* pass = "420not369";
 
 const int studentID = 67 ;
 const char* studentName = "Tristan";
 
 const char* server = "134.185.93.17"; // your server ip (no "http://")
 const int serverPort = 8080;
-const char* startApiPath = "api/strady/start";
+const char* startApiPath = "/api/strady/start";
+const char* endApiPath = "/api/strady/end";
 
 String stradyResponse = "";
 
@@ -83,12 +87,13 @@ bool shouldExit = false;
 // Exported study time (in seconds) - can be read by main program
 unsigned long exportedStudyTimeSeconds = 0;
 
-void connectToWifi() {
+void connectToWifi(char *api_path, char *study_session_id) {
   WiFiClient client;
   SerialMonitorInterface.print("Connecting to ");
   SerialMonitorInterface.print(server);
   SerialMonitorInterface.print(":");
-  SerialMonitorInterface.println(serverPort);
+  SerialMonitorInterface.print(serverPort);
+  SerialMonitorInterface.println(api_path);
 
   if (!client.connect(server, serverPort)) {
         SerialMonitorInterface.println("Connection failed");
@@ -99,14 +104,21 @@ void connectToWifi() {
         return;
     }
 
-    String payload = 
-    String("{\"studentId\":\"") + studentID + 
-    "\",\"studentName\":\"" + studentName + "\"}";
+    
+    String payload;
+    if (study_session_id == NULL) {
+      payload = 
+      String("{\"studentId\":") + studentID + 
+      ",\"studentName\":\"" + studentName + "\"}";
+    } else {
+      payload = 
+      String("{\"studySessionId\":") + study_session_id  + "}";
+    }
 
     SerialMonitorInterface.println(payload);
 
     // --------- HTTP HEADER -----------
-    client.print(String("POST ") + startApiPath + " HTTP/1.1\r\n");
+    client.print(String("POST ") + api_path + " HTTP/1.1\r\n");
     client.print(String("Host: ") + server + "\r\n");
     client.print("Content-Type: application/json\r\n");
     client.print(String("Content-Length: ") + payload.length() + "\r\n");
@@ -129,9 +141,22 @@ void connectToWifi() {
     }
 
     // --------- Read response ----------
-    stradyResponse = "";          // clear old response
+    stradyResponse = String("");          // clear old response
     bool jsonStartFound = false;
-
+    int json_start = false;
+    while (client.available()) {
+      String line = client.readStringUntil('\n');
+      SerialMonitorInterface.println(line);
+      if (json_start) {
+        stradyResponse += line;
+      }
+      if (line == "\r\n") {
+        json_start = true;
+      }
+    }
+    SerialMonitorInterface.println(stradyResponse);
+    deserializeJson(api_res_deserialized, stradyResponse);
+/*
     while (client.available()) {
       char c = client.read();
 
@@ -144,11 +169,11 @@ void connectToWifi() {
           stradyResponse += c;
       }
       SerialMonitorInterface.print(stradyResponse);
-    }
+    }*/
 }
 
 void setupPomodoro() {
-  connectToWifi();
+  connectToWifi((char *)startApiPath, NULL);
   
   Wire.begin();
   display.begin();
@@ -511,6 +536,7 @@ void drawSummaryScreen() {
 }
 
 // Getter for external access to study time
+// not needed since strady auto calculates
 unsigned long getStudyTimeSeconds() {
   return exportedStudyTimeSeconds;
 }
@@ -524,7 +550,8 @@ void setup() {
     display.clearScreen();
     display.setFont(thinPixel7_10ptFontInfo);
 
-    SerialMonitorInterface.begin(115200);
+    SerialMonitorInterface.begin(9600);
+    delay(500);
 
     WiFi.setPins(8, 2, A3, -1); // VERY IMPORTANT FOR TINYDUINO
     
@@ -566,7 +593,10 @@ void setup() {
 
 void loop() {
   if (!loopPomodoro()) {
+    const int studySessionId = api_res_deserialized["studySessionId"];
+    SerialMonitorInterface.println(studySessionId); // test print
     // Module exited - show exit message then stop
+    connectToWifi((char *)endApiPath, (char *)String(studySessionId).c_str());
     display.clearScreen();
     display.setFont(liberationSansNarrow_10ptFontInfo);
     display.fontColor(TS_8b_White, TS_8b_Black);
