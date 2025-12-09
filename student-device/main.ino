@@ -52,9 +52,8 @@ void downArrow(int x, int y) {
 // ==============================
 // Wi-Fi Credentials
 // ==============================
-// TODO: fill in your campus Wi-Fi here
-const char* ssid = "N1sh0";   // your network SSID (name)
-const char* pass = "jfbjz11901";   // your network password
+const char* ssid = ""; // your network SSID (name)
+const char* pass = ""; // your network password
 
 // ==============================
 // Student Credentials
