@@ -40,7 +40,6 @@ SIT: All-In-One is a hardware–software integrated system designed to improve s
 This project brings together multiple microcontroller devices and a full web platform to support:
 
 - Real-time room vacancy status
-- Pomodoro (Strady)
 - Attendance taking
 - Interactive classroom quizzes (ClassHoot)
 
@@ -98,9 +97,7 @@ This creates a classroom experience similar to Kahoot, but integrated with hardw
 
 ```
 .
-├── student-device/
-│   └── main.ino
-├── student-device-pomodoro/
+├── student- device/
 │   └── main.ino
 ├── attendace-device/
 │   └── main.ino

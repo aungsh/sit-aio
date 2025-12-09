@@ -363,32 +363,6 @@ export default function Strady() {
           </CardContent>
         </Card>
       </section>
-
-      {/* ================= RECENT STUDY SESSIONS ================= */}
-      <section>
-        <h2 className="text-3xl font-bold mb-4">🕒 Recent Study Sessions</h2>
-
-        <div className="space-y-4">
-          {recent.slice(0, 5).map((s) => (
-            <div
-              key={s.id}
-              className="p-4 rounded-xl border bg-white shadow-sm flex items-center justify-between"
-            >
-              <div>
-                <p className="font-bold text-lg">{s.name}</p>
-                <p className="text-gray-500 text-sm">
-                  {new Date(s.startTime).toLocaleString()}
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p className="text-xl font-extrabold">{s.durationMin} min</p>
-                <p className="text-gray-500 text-sm">Duration</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
